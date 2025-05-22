@@ -1,180 +1,185 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Tooltip, Avatar } from "@mui/material";
-import goldMedal from "./assets/gold-medal.png"; // Adjust path as needed
+import goldMedal from "./assets/gold-medal.png"; // <-- Adjust the import path as needed
 
-// Util: check if the date is today
-const isToday = (dateString) => {
+const LEADERBOARD_ENDPOINT = "https://postgre-backendbpq.onrender.com/getStats";
+const GET_QUIZ_ENDPOINT = "https://postgre-backendbpq.onrender.com/getAllQuiz";
+
+// Utility: is date today
+function isToday(dateString) {
   if (!dateString) return false;
   const today = new Date();
   const date = new Date(dateString);
   return date.toDateString() === today.toDateString();
-};
+}
 
-function App({ 
-  endpoint = "https://postgre-backendbpq.onrender.com/getStats", 
-  title = "Leaderboard", 
-  showQuizId = true 
-}) {
+function App() {
   const [leaderboard, setLeaderboard] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [quizId, setQuizId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch latest quiz ID if needed
+  // Fetch latest quizId on mount
   useEffect(() => {
-    if (!showQuizId) return;
     async function fetchQuizId() {
+      setLoading(true);
+      setError("");
       try {
-        const res = await fetch("https://postgre-backendbpq.onrender.com/getAllQuiz");
-        let data = await res.json();
-        if (typeof data === "string") data = JSON.parse(data);
-        if (
-          data &&
-          typeof data === "object" &&
-          data.type === "QUIZ_DATA" &&
-          Array.isArray(data.data) &&
-          data.data.length > 0
-        ) {
+        const res = await fetch(GET_QUIZ_ENDPOINT);
+        const data = await res.json();
+        if (data.type === "QUIZ_DATA" && Array.isArray(data.data) && data.data.length > 0) {
           setQuizId(data.data[0][0]);
         } else {
           setError("No quizzes found.");
-          setLoading(false);
         }
       } catch (e) {
         setError("Failed to fetch quiz list.");
-        setLoading(false);
-      }
-    }
-    fetchQuizId();
-  }, [showQuizId]);
-
-  // Fetch leaderboard data
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      setLoading(true);
-      try {
-        let data;
-        if (endpoint.endsWith("/getStats")) {
-          if (!quizId) return;
-          const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quizId: String(quizId) }),
-          });
-          data = await res.json();
-          if (typeof data === "string") data = JSON.parse(data);
-        } else {
-          const res = await fetch(endpoint);
-          data = await res.json();
-          if (typeof data === "string") data = JSON.parse(data);
-        }
-        if (
-          (data.type === "STATS_DATA" ||
-            data.type === "MAIN_LEADERBOARD" ||
-            data.type === "SUB_LEADERBOARD") &&
-          Array.isArray(data.data)
-        ) {
-          setLeaderboard(data.data);
-        } else {
-          setError("No leaderboard data found.");
-        }
-      } catch (e) {
-        setError("Failed to fetch leaderboard.");
       }
       setLoading(false);
     }
-    if (endpoint.endsWith("/getStats")) {
-      if (quizId) fetchLeaderboard();
-    } else {
-      fetchLeaderboard();
+    fetchQuizId();
+  }, []);
+
+  // Poll for leaderboard updates every 10 seconds
+  useEffect(() => {
+    if (!quizId) return;
+
+    let isMounted = true;
+
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch(LEADERBOARD_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quizId: String(quizId) }),
+        });
+        const data = await res.json();
+        if (data.type === "STATS_DATA" && Array.isArray(data.data) && isMounted) {
+          setLeaderboard(data.data);
+          setError("");
+        } else if (isMounted) {
+          setLeaderboard([]);
+          setError("No leaderboard data found.");
+        }
+      } catch (e) {
+        if (isMounted) {
+          setLeaderboard([]);
+          setError("Failed to fetch leaderboard.");
+        }
+      }
+      setLoading(false);
     }
-    // eslint-disable-next-line
-  }, [endpoint, quizId]);
+
+    fetchLeaderboard();
+    const intervalId = setInterval(fetchLeaderboard, 10000); // poll every 10 seconds
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [quizId]);
+
+  // ---- RENDER ----
 
   return (
-    <Box sx={{ background: "#18181a", minHeight: "100vh", py: 4 }}>
+    <div style={{
+      background: "#222",
+      minHeight: "100vh",
+      padding: "2rem 0",
+      fontFamily: "sans-serif"
+    }}>
+      <h1 style={{ color: "#fff", textAlign: "center", marginBottom: "2rem" }}>
+        Quiz Leaderboard
+      </h1>
+      {error && <div style={{ color: "red", textAlign: "center" }}>{error}</div>}
       {loading ? (
-        <Typography color="#fff" align="center">
-          Loading...
-        </Typography>
+        <div style={{ color: "#fff", textAlign: "center" }}>Loading...</div>
       ) : leaderboard.length === 0 ? (
-        <Typography color="#fff" align="center">
-          No leaderboard data found.
-        </Typography>
+        <div style={{ color: "#fff", textAlign: "center" }}>No leaderboard data found.</div>
       ) : (
-        <Box sx={{ maxWidth: 500, mx: "auto" }}>
-          {leaderboard.map((row, index) => (
-            <Box
-              key={index}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                background: "#222",
-                borderRadius: "16px",
-                px: 2,
-                py: 1.5,
-                my: 1.2,
-                boxShadow: "0 1px 12px rgba(0,0,0,0.35)",
-              }}
-            >
-              {/* Rank */}
-              <Typography
-                color="#fff"
-                sx={{
-                  width: 32,
-                  textAlign: "center",
-                  fontWeight: 600,
-                  fontSize: 25,
-                  mr: 1,
+        <div style={{ maxWidth: 480, margin: "0 auto" }}>
+          {leaderboard.map((row, idx) => {
+            const avatarStyle = isToday(row[5])
+              ? { border: "3px solid #18e818" }
+              : { border: "3px solid #444" };
+            return (
+              <div key={idx}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  background: "#222",
+                  borderRadius: 12,
+                  margin: "8px 0",
+                  padding: "10px 18px",
+                  boxShadow: "0 2px 8px #0002"
                 }}
               >
-                {row[0]}
-              </Typography>
-              {/* Avatar */}
-              <Tooltip title={row[2]}>
-                <Avatar
-                  src={row[3] ? row[3] : `https://bpqcdn.co.uk/avatar/${row[2]}.webp`}
-                  alt={row[2]}
-                  sx={{
-                    width: 54,
-                    height: 54,
-                    mr: 1.8,
-                    border: isToday(row[5]) ? "3px solid #2ecc40" : "2px solid #444",
-                    boxSizing: "border-box",
+                {/* Place */}
+                <span style={{
+                  width: 32,
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 22,
+                  textAlign: "center"
+                }}>
+                  {row[0]}
+                </span>
+                {/* Avatar */}
+                <img
+                  src={
+                    row[3]
+                      ? row[3]
+                      : `https://bpqcdn.co.uk/avatar/${row[2]}.webp`
+                  }
+                  alt={row[6] || row[2]}
+                  width={48}
+                  height={48}
+                  style={{
+                    borderRadius: "50%",
+                    margin: "0 14px",
+                    objectFit: "cover",
+                    ...avatarStyle
+                  }}
+                  onError={e => {
+                    // fallback to placeholder if needed
+                    e.target.onerror = null;
+                    e.target.src = "/vite.svg";
                   }}
                 />
-              </Tooltip>
-              {/* Name & Points */}
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  color="#fff"
-                  sx={{ fontWeight: 600, fontSize: 20, lineHeight: 1.15 }}
-                >
-                  {row[6]}
-                </Typography>
-                <Typography color="#ccc" sx={{ fontWeight: 500, fontSize: 17, mt: 0.2 }}>
-                  {row[1]} Points
-                </Typography>
-              </Box>
-              {/* Medal at end, only if winner */}
-              {row[7] === "Yes" && (
-                <Box sx={{ ml: 2 }}>
+                {/* Name and Points stacked */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                  <span style={{
+                    color: "#fff",
+                    fontSize: 19,
+                    fontWeight: 600,
+                    lineHeight: 1.1,
+                    textTransform: "none"
+                  }}>
+                    {row[6]}
+                  </span>
+                  <span style={{
+                    color: "#ccc",
+                    fontSize: 16,
+                    marginTop: 2,
+                  }}>
+                    {row[1]} Points
+                  </span>
+                </div>
+                {/* Medal */}
+                {row[7] === "Yes" && (
                   <img
                     src={goldMedal}
                     alt="Winner"
-                    width={48}
-                    height={44}
-                    style={{
-                      filter: "drop-shadow(0 2px 6px #111)",
-                    }}
+                    width={40}
+                    height={36}
+                    style={{ marginLeft: 8 }}
                   />
-                </Box>
-              )}
-            </Box>
-          ))}
-        </Box>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
