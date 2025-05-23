@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Tooltip, Avatar } from "@mui/material";
-import goldMedal from "./assets/gold-medal.png"; // Adjust path as needed
+import goldMedal from "./assets/gold-medal.png";
 
 // Util: check if the date is today
 const isToday = (dateString) => {
@@ -10,11 +10,7 @@ const isToday = (dateString) => {
   return date.toDateString() === today.toDateString();
 };
 
-function App({ 
-  endpoint = "https://postgre-backendbpq.onrender.com/getStats", 
-  title = "Leaderboard", 
-  showQuizId = true 
-}) {
+function App({ endpoint, title, needsQuizId }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quizId, setQuizId] = useState(null);
@@ -22,7 +18,7 @@ function App({
 
   // Fetch latest quiz ID if needed
   useEffect(() => {
-    if (!showQuizId) return;
+    if (!needsQuizId) return;
     async function fetchQuizId() {
       try {
         const res = await fetch("https://postgre-backendbpq.onrender.com/getAllQuiz");
@@ -46,7 +42,7 @@ function App({
       }
     }
     fetchQuizId();
-  }, [showQuizId]);
+  }, [needsQuizId]);
 
   // Fetch leaderboard data
   useEffect(() => {
@@ -54,7 +50,7 @@ function App({
       setLoading(true);
       try {
         let data;
-        if (endpoint.endsWith("/getStats")) {
+        if (needsQuizId) {
           if (!quizId) return;
           const res = await fetch(endpoint, {
             method: "POST",
@@ -68,12 +64,7 @@ function App({
           data = await res.json();
           if (typeof data === "string") data = JSON.parse(data);
         }
-        if (
-          (data.type === "STATS_DATA" ||
-            data.type === "MAIN_LEADERBOARD" ||
-            data.type === "SUB_LEADERBOARD") &&
-          Array.isArray(data.data)
-        ) {
+        if (data && Array.isArray(data.data)) {
           setLeaderboard(data.data);
         } else {
           setError("No leaderboard data found.");
@@ -83,27 +74,47 @@ function App({
       }
       setLoading(false);
     }
-    if (endpoint.endsWith("/getStats")) {
+    if (needsQuizId) {
       if (quizId) fetchLeaderboard();
     } else {
       fetchLeaderboard();
     }
-    // eslint-disable-next-line
-  }, [endpoint, quizId]);
+  }, [endpoint, needsQuizId, quizId]);
 
   return (
-    <Box sx={{ background: "#18181a", minHeight: "100vh", py: 4 }}>
-      {loading ? (
-        <Typography color="#fff" align="center">
-          Loading...
+    <Box sx={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      minHeight: "100vh",
+      background: "#18181a",
+      overflowX: "hidden",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      paddingTop: "40px",
+      boxSizing: "border-box"
+    }}>
+      <Box sx={{
+        width: "100%",
+        maxWidth: "500px",
+        paddingX: "16px",
+        boxSizing: "border-box"
+      }}>
+        <Typography color="#fff" sx={{ mb: 3, fontSize: 26, fontWeight: 700 }} align="center">
+          {title}
         </Typography>
-      ) : leaderboard.length === 0 ? (
-        <Typography color="#fff" align="center">
-          No leaderboard data found.
-        </Typography>
-      ) : (
-        <Box sx={{ maxWidth: 500, mx: "auto" }}>
-          {leaderboard.map((row, index) => (
+        {loading ? (
+          <Typography color="#fff" align="center">
+            Loading...
+          </Typography>
+        ) : leaderboard.length === 0 ? (
+          <Typography color="#fff" align="center">
+            {error || "No leaderboard data found."}
+          </Typography>
+        ) : (
+          leaderboard.map((row, index) => (
             <Box
               key={index}
               sx={{
@@ -115,6 +126,7 @@ function App({
                 py: 1.5,
                 my: 1.2,
                 boxShadow: "0 1px 12px rgba(0,0,0,0.35)",
+                overflow: "hidden"
               }}
             >
               {/* Rank */}
@@ -171,9 +183,9 @@ function App({
                 </Box>
               )}
             </Box>
-          ))}
-        </Box>
-      )}
+          ))
+        )}
+      </Box>
     </Box>
   );
 }
