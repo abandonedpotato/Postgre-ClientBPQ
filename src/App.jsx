@@ -102,9 +102,6 @@ function App({ endpoint, title, needsQuizId }) {
         paddingX: "16px",
         boxSizing: "border-box"
       }}>
-        <Typography color="#fff" sx={{ mb: 3, fontSize: 26, fontWeight: 700 }} align="center">
-          {title}
-        </Typography>
         {loading ? (
           <Typography color="#fff" align="center">
             Loading...
