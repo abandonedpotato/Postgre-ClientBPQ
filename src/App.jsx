@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Box, Typography, Tooltip, Avatar } from "@mui/material";
 import goldMedal from "./assets/gold-medal.png";
 
@@ -15,6 +15,7 @@ function App({ endpoint, title, needsQuizId }) {
   const [loading, setLoading] = useState(true);
   const [quizId, setQuizId] = useState(null);
   const [error, setError] = useState("");
+  const initialLoad = useRef(true);
 
   // Fetch latest quiz ID if needed
   useEffect(() => {
@@ -44,50 +45,48 @@ function App({ endpoint, title, needsQuizId }) {
     fetchQuizId();
   }, [needsQuizId]);
 
-  // Fetch leaderboard data
-// Fetch leaderboard data and auto-refresh every 10 seconds
-useEffect(() => {
-  let timerId;
+  // Fetch leaderboard data and auto-refresh every 10 seconds
+  useEffect(() => {
+    let timerId;
 
-  async function fetchLeaderboard() {
-    setLoading(true);
-    try {
-      let data;
-      if (needsQuizId) {
-        if (!quizId) return;
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quizId: String(quizId) }),
-        });
-        data = await res.json();
-        if (typeof data === "string") data = JSON.parse(data);
-      } else {
-        const res = await fetch(endpoint);
-        data = await res.json();
-        if (typeof data === "string") data = JSON.parse(data);
+    async function fetchLeaderboard() {
+      // Only show loading spinner on first fetch
+      if (initialLoad.current) setLoading(true);
+      try {
+        let data;
+        if (needsQuizId) {
+          if (!quizId) return;
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quizId: String(quizId) }),
+          });
+          data = await res.json();
+          if (typeof data === "string") data = JSON.parse(data);
+        } else {
+          const res = await fetch(endpoint);
+          data = await res.json();
+          if (typeof data === "string") data = JSON.parse(data);
+        }
+        if (data && Array.isArray(data.data)) {
+          setLeaderboard(data.data);
+        } else {
+          setError("No leaderboard data found.");
+        }
+      } catch (e) {
+        setError("Failed to fetch leaderboard.");
       }
-      if (data && Array.isArray(data.data)) {
-        setLeaderboard(data.data);
-      } else {
-        setError("No leaderboard data found.");
-      }
-    } catch (e) {
-      setError("Failed to fetch leaderboard.");
+      setLoading(false);
+      initialLoad.current = false; // Mark as loaded after first fetch
     }
-    setLoading(false);
-  }
 
-  // Initial fetch and setup interval
-  if ((needsQuizId && quizId) || !needsQuizId) {
-    fetchLeaderboard(); // initial load
-    timerId = setInterval(fetchLeaderboard, 10000); // every 10s
-  }
+    if ((needsQuizId && quizId) || !needsQuizId) {
+      fetchLeaderboard(); // Initial load
+      timerId = setInterval(fetchLeaderboard, 10000); // Every 10 seconds
+    }
 
-  // Cleanup interval on unmount or dependency change
-  return () => clearInterval(timerId);
-
-}, [endpoint, needsQuizId, quizId]);
+    return () => clearInterval(timerId);
+  }, [endpoint, needsQuizId, quizId]);
 
   return (
     <Box sx={{
@@ -110,6 +109,18 @@ useEffect(() => {
         paddingX: "16px",
         boxSizing: "border-box"
       }}>
+        <Typography
+          variant="h4"
+          align="center"
+          sx={{
+            color: "#fff",
+            mb: 3,
+            fontWeight: 700,
+            letterSpacing: 0.2
+          }}
+        >
+          {title || "Leaderboard"}
+        </Typography>
         {loading ? (
           <Typography color="#fff" align="center">
             Loading...
