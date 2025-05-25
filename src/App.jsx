@@ -136,11 +136,11 @@ function App({ endpoint, title, needsQuizId }) {
               <Typography
                 color="#fff"
                 sx={{
-                  width: 32,
+                  width: 36,
                   textAlign: "center",
                   fontWeight: 600,
                   fontSize: 25,
-                  mr: 1,
+                  mr: 2.4, // increased space
                 }}
               >
                 {row[0]}
