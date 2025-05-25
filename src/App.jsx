@@ -45,41 +45,49 @@ function App({ endpoint, title, needsQuizId }) {
   }, [needsQuizId]);
 
   // Fetch leaderboard data
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      setLoading(true);
-      try {
-        let data;
-        if (needsQuizId) {
-          if (!quizId) return;
-          const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quizId: String(quizId) }),
-          });
-          data = await res.json();
-          if (typeof data === "string") data = JSON.parse(data);
-        } else {
-          const res = await fetch(endpoint);
-          data = await res.json();
-          if (typeof data === "string") data = JSON.parse(data);
-        }
-        if (data && Array.isArray(data.data)) {
-          setLeaderboard(data.data);
-        } else {
-          setError("No leaderboard data found.");
-        }
-      } catch (e) {
-        setError("Failed to fetch leaderboard.");
+// Fetch leaderboard data and auto-refresh every 10 seconds
+useEffect(() => {
+  let timerId;
+
+  async function fetchLeaderboard() {
+    setLoading(true);
+    try {
+      let data;
+      if (needsQuizId) {
+        if (!quizId) return;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quizId: String(quizId) }),
+        });
+        data = await res.json();
+        if (typeof data === "string") data = JSON.parse(data);
+      } else {
+        const res = await fetch(endpoint);
+        data = await res.json();
+        if (typeof data === "string") data = JSON.parse(data);
       }
-      setLoading(false);
+      if (data && Array.isArray(data.data)) {
+        setLeaderboard(data.data);
+      } else {
+        setError("No leaderboard data found.");
+      }
+    } catch (e) {
+      setError("Failed to fetch leaderboard.");
     }
-    if (needsQuizId) {
-      if (quizId) fetchLeaderboard();
-    } else {
-      fetchLeaderboard();
-    }
-  }, [endpoint, needsQuizId, quizId]);
+    setLoading(false);
+  }
+
+  // Initial fetch and setup interval
+  if ((needsQuizId && quizId) || !needsQuizId) {
+    fetchLeaderboard(); // initial load
+    timerId = setInterval(fetchLeaderboard, 10000); // every 10s
+  }
+
+  // Cleanup interval on unmount or dependency change
+  return () => clearInterval(timerId);
+
+}, [endpoint, needsQuizId, quizId]);
 
   return (
     <Box sx={{

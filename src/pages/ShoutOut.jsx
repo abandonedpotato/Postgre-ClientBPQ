@@ -4,10 +4,10 @@ import {
   Card,
   CardHeader,
   CardContent,
-  CardActions,
   Avatar,
   Typography,
-  Button
+  Button,
+  Box
 } from "@mui/material";
 import axios from "axios";
 
@@ -65,11 +65,18 @@ const ShoutOut = () => {
         return (
           <Grid item xs={12} sm={6} md={4} lg={3} key={item[0]}>
             <Card sx={{ height: "100%" }}>
-              <CardHeader
-                avatar={<Avatar alt={item[2]} src={item[5]} />}
-                title={<Typography fontWeight={700}> {item[2]} </Typography>}
-                subheader={<Typography color='blue' fontWeight={500}> {item[1]} </Typography>}
-              />
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Avatar alt={item[2]} src={item[5]} sx={{ mr: 2 }} />
+                  <Box>
+                    <Typography fontWeight={700}>{item[2]}</Typography>
+                    <Typography color='blue' fontWeight={500}>{item[1]}</Typography>
+                  </Box>
+                </Box>
+                <Button onClick={() => deleteShoutOutComment(item[1])} variant='contained' color='error'>
+                  Delete
+                </Button>
+              </Box>
               <CardContent>
                 {comments.map((comment, i) => (
                   <Typography key={i} variant="body1" gutterBottom>
@@ -77,17 +84,6 @@ const ShoutOut = () => {
                   </Typography>
                 ))}
               </CardContent>
-              <CardActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Quiz: {item[7]}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {new Date(item[6]).toLocaleString()}
-                </Typography>
-                <Button onClick={() => deleteShoutOutComment(item[1])} variant='contained' color='error'>
-                  Delete
-                </Button>
-              </CardActions>
             </Card>
           </Grid>
         );
