@@ -50,7 +50,6 @@ function App({ endpoint, title, needsQuizId }) {
     let timerId;
 
     async function fetchLeaderboard() {
-      // Only show loading spinner on first fetch
       if (initialLoad.current) setLoading(true);
       try {
         let data;
@@ -77,7 +76,7 @@ function App({ endpoint, title, needsQuizId }) {
         setError("Failed to fetch leaderboard.");
       }
       setLoading(false);
-      initialLoad.current = false; // Mark as loaded after first fetch
+      initialLoad.current = false;
     }
 
     if ((needsQuizId && quizId) || !needsQuizId) {
@@ -109,18 +108,6 @@ function App({ endpoint, title, needsQuizId }) {
         paddingX: "16px",
         boxSizing: "border-box"
       }}>
-        <Typography
-          variant="h4"
-          align="center"
-          sx={{
-            color: "#fff",
-            mb: 3,
-            fontWeight: 700,
-            letterSpacing: 0.2
-          }}
-        >
-          {title || "Leaderboard"}
-        </Typography>
         {loading ? (
           <Typography color="#fff" align="center">
             Loading...
