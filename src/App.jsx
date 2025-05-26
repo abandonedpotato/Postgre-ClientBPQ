@@ -32,6 +32,7 @@ function App({ endpoint, title, needsQuizId }) {
           Array.isArray(data.data) &&
           data.data.length > 0
         ) {
+          console.log("Setting quizId to", data.data[0][0]); // <---- Add 
           setQuizId(data.data[0][0]);
         } else {
           setError("No quizzes found.");
