@@ -56,6 +56,7 @@ function App({ endpoint, title, needsQuizId }) {
         let data;
         if (needsQuizId) {
           if (!quizId) return;
+          console.log("Setting quizId to", quizId); // <---- Add 
           const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
