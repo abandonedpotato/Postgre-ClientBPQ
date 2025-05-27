@@ -15,7 +15,7 @@ function Leaderboard({ endpoint, title, needsQuizId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch leaderboard data and auto-refresh every 10 seconds
+  // Fetch leaderboard data and auto-refresh every 3 seconds
   useEffect(() => {
     setLoading(true);
     setError("");
@@ -56,7 +56,7 @@ function Leaderboard({ endpoint, title, needsQuizId }) {
     }
 
     fetchLeaderboard(); // Initial load
-    timerId = setInterval(fetchLeaderboard, 10000); // Every 10 seconds
+    timerId = setInterval(fetchLeaderboard, 3000); // Every 3 seconds
 
     return () => clearInterval(timerId);
   }, [endpoint, needsQuizId]);
