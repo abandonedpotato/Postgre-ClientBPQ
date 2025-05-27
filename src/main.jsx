@@ -6,7 +6,7 @@ import App from "./App.jsx";
 import ShoutOut from "./pages/ShoutOut.jsx"; // ✅ make sure this path matches your file structure
 import "./index.css";
 //const BASE_URL = "https://golive.bigpotatoquiz.co.uk";
-const BASE_URL = "https://postgre-clientbpq.onrender.com/";
+const BASE_URL = "https://postgre-backendbpq.onrender.com/";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
