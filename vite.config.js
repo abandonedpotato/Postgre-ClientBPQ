@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     allowedHosts: [
       'ttsx.bigpotatoquiz.co.uk',
-      'bpq-client.onrender.com'  
+      'postgre-clientbpq.onrender.com'  
     ],
     host: '0.0.0.0', // Enables LAN access in local dev, safe to leave for Render
     port: 5173,      // Only affects local development, ignored by Render static site
