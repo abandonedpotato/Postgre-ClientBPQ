@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App.jsx";
 import ShoutOut from "./pages/ShoutOut.jsx"; // ✅ make sure this path matches your file structure
 import "./index.css";
+//const BASE_URL = "https://golive.bigpotatoquiz.co.uk";
+const BASE_URL = "postgre-backendbpq.onrender.com";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -13,7 +15,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         path="/leaderboard"
         element={
           <App
-            endpoint="https://postgre-backendbpq.onrender.com/getStats"
+            endpoint={`${BASE_URL}/getStats`}
             title="Leaderboard"
             needsQuizId={true}
           />
@@ -23,7 +25,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         path="/leaderboardmain"
         element={
           <App
-            endpoint="https://postgre-backendbpq.onrender.com/getMainStats"
+            endpoint={`${BASE_URL}/getMainStats`}
             title="Main Leaderboard"
             needsQuizId={true}
           />
@@ -33,7 +35,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         path="/leaderboardsubs"
         element={
           <App
-            endpoint="https://postgre-backendbpq.onrender.com/getSubStats"
+            endpoint={`${BASE_URL}/getSubStats`}
             title="Subscriber Leaderboard"
             needsQuizId={true}
           />
@@ -43,8 +45,18 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         path="/leaderboardnew"
         element={
           <App
-            endpoint="https://postgre-backendbpq.onrender.com/getNewStats"
+            endpoint={`${BASE_URL}/getNewStats`}
             title="New Players"
+            needsQuizId={true}
+          />
+        }
+      />
+      <Route
+        path="/leaderboardminus"
+        element={
+          <App
+            endpoint={`${BASE_URL}/getNewStats`}
+            title="Minus Players"
             needsQuizId={true}
           />
         }
