@@ -12,10 +12,10 @@ import {
 import axios from "axios";
 
 const CONSTANT = {
-  //API_BASE: "https://postgre-backendbpq.onrender.com/",
-  //SOCKET_URL: "wss://postgre-backendbpq.onrender.com/ws"
-  API_BASE: "https://golive.bigpotatoquiz.co.uk/",
-  SOCKET_URL: "wss://golive.bigpotatoquiz.co.uk/ws"
+  API_BASE: "https://postgre-backendbpq.onrender.com/",
+  SOCKET_URL: "wss://postgre-backendbpq.onrender.com/ws"
+  //API_BASE: "https://golive.bigpotatoquiz.co.uk/",
+  //SOCKET_URL: "wss://golive.bigpotatoquiz.co.uk/ws"
 };
 
 const ShoutOut = () => {
