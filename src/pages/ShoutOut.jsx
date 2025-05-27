@@ -57,10 +57,10 @@ const ShoutOut = () => {
     return () => ws.close();
   }, [ws]);
 
-  // Poll every 10 seconds as well
+  // Poll every 3 seconds as well
   useEffect(() => {
     getData();
-    const intervalId = setInterval(() => getData(), 10000);
+    const intervalId = setInterval(() => getData(), 3000);
     return () => clearInterval(intervalId);
   }, []);
 
