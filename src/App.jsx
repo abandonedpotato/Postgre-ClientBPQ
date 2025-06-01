@@ -74,7 +74,6 @@ function Leaderboard({ endpoint, title, needsQuizId }) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        paddingTop: "40px",
         boxSizing: "border-box",
       }}
     >

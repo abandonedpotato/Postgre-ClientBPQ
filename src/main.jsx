@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App.jsx";
 import ShoutOut from "./pages/ShoutOut.jsx"; // ✅ make sure this path matches your file structure
 import "./index.css";
-//const BASE_URL = "https://golive.bigpotatoquiz.co.uk";
+//const BASE_URL = "https://postgre-backendbpq.onrender.com";
 const BASE_URL = "https://postgre-backendbpq.onrender.com";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -55,7 +55,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         path="/leaderboardminus"
         element={
           <App
-            endpoint={`${BASE_URL}/getNewStats`}
+            endpoint={`${BASE_URL}/getMinusStats`}
             title="Minus Players"
             needsQuizId={true}
           />
