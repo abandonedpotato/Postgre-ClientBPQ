@@ -43,7 +43,7 @@ const ShoutOut = () => {
   };
 
   // WebSocket to auto-update on result/shoutout/status
-  const ws = useMemo(() => new WebSocket(CONSTANT.SOCKET_URL), []);
+  const ws = useMemo(() => new WebSocket(CONSTANT.SOCKET_URL+`/${Date.now()}`), []);
   useEffect(() => {
     ws.onmessage = (event) => {
       let data = JSON.parse(event.data);
